@@ -1,25 +1,25 @@
 #!/usr/bin/python
 
-from numpy import polynomial as poly
+from numpy import poly1d as poly
 from numpy import polyfit as fit
 
 from socket import socket, SO_REUSEADDR, SOL_SOCKET
 from pickle import loads
 from base64 import b64decode
-from threading import Thread, RLock
+from threading import Thread
+from time import sleep
 
 from config import *
 
-def Handler(ss, rl):
+def Handler(ss):
+  global A, R, x
   data = ss.recv(100)
   Id, u, w = loads(b64decode(data))
   ss.send("OK\n")
   ss.close()
-  rl.acquire()
   A.append(u)
   R.append(w)
   x.append(Id + 1)
-  rl.release()
 
 s = socket()
 s.setsockopt(SOL_SOCKET, SO_REUSEADDR, 0)
@@ -29,13 +29,14 @@ global A, R, x
 A = []
 R = []
 x = []
-rl = RLock()
-for i in xrange(T):
+for i in xrange(T + 1):
   ss = s.accept()[0]
-  t = Thread(targer=Handler, args=(ss, rl))
+  t = Thread(target=Handler, args=(ss, ))
   t.setDaemon(True)
   t.start()
 
+sleep(5)
 print A, R, x
-Ax = poly.Polynomial(fit(x, A, T))
+Ax = poly(fit(x, A, T))
+print Ax
 print Ax(0)

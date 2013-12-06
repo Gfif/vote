@@ -9,7 +9,7 @@ from Crypto.PublicKey import RSA
 from base64 import b64encode, b64decode
 from pickle import dumps, loads
 
-from numpy import polynomial as poly
+from numpy import poly1d as poly
 
 from config import *
 
@@ -30,15 +30,20 @@ if __name__ == "__main__":
   
   
   # Генерируем случайные коэффициенты для поиномов A(x), R(x)
-  A = [a]
-  R = [r]
+  A = []
+  R = []
   for i in xrange(T):
     A.append(rand(1, P))
     R.append(rand(1, P))
 
+  A.append(a)
+  R.append(r)
+
   # Создаем полиномы
-  Ax = poly.Polynomial(A)
-  Rx = poly.Polynomial(R)
+  Ax = poly(A)
+  print Ax
+  print Ax(0)
+  Rx = poly(R)
  
   # Импортируем приватный ключ для подписи
   keyfile = open(CLIENTKEYFILES[Id][0], "r")
